@@ -4,12 +4,12 @@ A document intelligence API that lets you ingest PDFs, ask questions about them,
 
 ## Stack
 
-- **FastAPI** — async REST API with Pydantic request/response validation
-- **AWS Lambda + API Gateway** — serverless deployment, scales to zero when idle
-- **ChromaDB** — vector database for semantic similarity search
-- **OpenAI API** — `text-embedding-3-small` for embeddings, `gpt-5-nano` for generation
-- **pypdf** — PDF text extraction
-- **Docker + GitHub Actions** — containerized builds, automated Lambda deployment
+- **FastAPI** - async REST API with Pydantic request/response validation
+- **AWS Lambda + API Gateway** - serverless deployment, scales to zero when idle
+- **ChromaDB** - vector database for semantic similarity search
+- **OpenAI API** - `text-embedding-3-small` for embeddings, `gpt-5-nano` for generation
+- **pypdf** - PDF text extraction
+- **Docker + GitHub Actions** - containerized builds, automated Lambda deployment
 
 ## Endpoints
 
