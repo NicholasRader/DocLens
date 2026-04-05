@@ -1,9 +1,10 @@
 from typing import List
-from app.config import collection
+from app.config import get_collection
 from app.models import DocumentInfo
 
 
 def store_in_chroma(chunks: List[str], embeddings: List[List[float]], filename: str) -> None:
+    collection = get_collection()
     ids = [f"{filename}_chunk_{i}" for i in range(len(chunks))]
     metadatas = [{"filename": filename, "chunk_index": i} for i in range(len(chunks))]
 
@@ -16,6 +17,7 @@ def store_in_chroma(chunks: List[str], embeddings: List[List[float]], filename: 
 
 
 def get_all_chunks(filename: str) -> List[str]:
+    collection = get_collection()
     results = collection.get(
         where={"filename": filename}
     )
@@ -24,6 +26,7 @@ def get_all_chunks(filename: str) -> List[str]:
 
 
 def get_all_documents() -> List[DocumentInfo]:
+    collection = get_collection()
     results = collection.get()
 
     if not results["metadatas"]:

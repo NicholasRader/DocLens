@@ -1,0 +1,8 @@
+(.venv) PS C:\Users\darth\OneDrive\Documents\GitHub\DocLens> aws lambda create-function --function-name doclens --package-type Image --code ImageUri=425292741158.dkr.ecr.us-east-1.amazonaws.com/doclens:latest --role arn:aws:iam::425292741158:role/doclens-lambda-role --timeout 300 --memory-size 1024 --region us-east-1
+
+aws: [ERROR]: An error occurred (InvalidParameterValueException) when calling the CreateFunction operation: The image manifest, config or layer media type for the source image 425292741158.dkr.ecr.us-east-1.amazonaws.com/doclens:latest is not supported.
+
+Additional error details:
+Type: User
+message: The image manifest, config or layer media type for the source image 425292741158.dkr.ecr.us-east-1.amazonaws.com/doclens:latest is not supported.
+(.venv) PS C:\Users\darth\OneDrive\Documents\GitHub\DocLens>

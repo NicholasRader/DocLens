@@ -7,7 +7,7 @@ from app.models import IngestResponse, DeleteResponse, DocumentsResponse
 from app.services.pdf import chunk_text
 from app.services.embeddings import embed_chunks
 from app.services.storage import store_in_chroma, get_all_chunks, get_all_documents
-from app.config import CHUNK_SIZE, CHUNK_OVERLAP, collection
+from app.config import CHUNK_SIZE, CHUNK_OVERLAP, get_collection
 from app.utils import format_duration
 
 
@@ -119,7 +119,7 @@ async def delete_document(filename: str):
             detail=f"No content found for '{filename}'. Nothing to delete."
         )
     
-    collection.delete(where={"filename": filename})
+    get_collection().delete(where={"filename": filename})
 
     return DeleteResponse(
         filename=filename,

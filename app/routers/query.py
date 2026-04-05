@@ -4,7 +4,7 @@ from app.models import QueryRequest, QueryResponse, SummarizeRequest, SummarizeR
 from app.services.embeddings import embed_chunks
 from app.services.storage import get_all_chunks
 from app.services.llm import generate_answer, summarize_chunks
-from app.config import collection
+from app.config import get_collection
 from app.utils import format_duration
 
 
@@ -13,6 +13,7 @@ router = APIRouter()
 
 async def retrieve_relevant_chunks(question: str, filename: str, n_results: int = 3) -> List[str]:
     question_embedding = await embed_chunks([question])
+    collection = get_collection()
 
     results = collection.query(
         query_embeddings=question_embedding,
