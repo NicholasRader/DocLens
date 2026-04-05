@@ -74,17 +74,22 @@ with tab3:
 with st.sidebar:
     st.header("Ingested documents")
     if st.button("Refresh", key="refresh_btn"):
-        response = requests.get(f"{API_BASE}/documents")
-        if response.status_code == 200:
-            data = response.json()
-            if data["documents"]:
-                for doc in data["documents"]:
-                    st.write(f"📄 {doc['filename']} ({doc['chunk_count']} chunks)")
-                st.caption(
-                    f"{data['total_documents']} document(s), "
-                    f"{data['total_chunks']} total chunks"
-                )
+        try:
+            response = requests.get(f"{API_BASE}/documents", timeout=30)
+            if response.status_code == 200:
+                data = response.json()
+                if data["documents"]:
+                    for doc in data["documents"]:
+                        st.write(f"📄 {doc['filename']} ({doc['chunk_count']} chunks)")
+                    st.caption(
+                        f"{data['total_documents']} document(s), "
+                        f"{data['total_chunks']} total chunks"
+                    )
+                else:
+                    st.write("No documents ingested yet.")
             else:
-                st.write("No documents ingested yet.")
-        else:
-            st.error("Could not load documents.")
+                st.error("Could not load documents.")
+        except requests.exceptions.Timeout:
+            st.error("Request timed out. Lambda may be cold - try again.")
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
