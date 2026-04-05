@@ -30,6 +30,12 @@ A document intelligence API that lets you ingest PDFs, ask questions about them,
 
 **Summarization:** Chunks are batched into groups of 10 and summarized concurrently via `asyncio.gather` with a semaphore capping concurrent LLM calls. Batch summaries are reduced into a single final summary.
 
+## Live API
+
+Base URL: `https://zmffo3m7oe.execute-api.us-east-1.amazonaws.com/prod`
+
+Interactive docs: https://zmffo3m7oe.execute-api.us-east-1.amazonaws.com/prod/docs
+
 ## Running locally
 ```bash
 git clone https://github.com/NicholasRader/DocLens
