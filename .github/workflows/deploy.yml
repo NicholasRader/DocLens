@@ -1,0 +1,78 @@
+name: Deploy to AWS Lambda
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Ensure ECR repository exists
+        run: |
+          aws ecr describe-repositories --repository-names doclens --region us-east-1 || \
+          aws ecr create-repository --repository-name doclens --region us-east-1
+
+      - name: Build and push image to ECR
+        env:
+          ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build --platform linux/amd64 --provenance=false -t doclens .
+          docker tag doclens:latest $ECR_REGISTRY/doclens:$IMAGE_TAG
+          docker tag doclens:latest $ECR_REGISTRY/doclens:latest
+          docker push $ECR_REGISTRY/doclens:$IMAGE_TAG
+          docker push $ECR_REGISTRY/doclens:latest
+
+      - name: Update Lambda function
+        env:
+          ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          aws lambda update-function-code \
+            --function-name doclens \
+            --image-uri $ECR_REGISTRY/doclens:$IMAGE_TAG \
+            --region us-east-1
+
+      - name: Wait for Lambda update
+        run: |
+          aws lambda wait function-updated \
+            --function-name doclens \
+            --region us-east-1
+
+      - name: Update Lambda environment variables
+        run: |
+          aws lambda update-function-configuration \
+            --function-name doclens \
+            --environment "Variables={OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}}" \
+            --region us-east-1
+
+      - name: Delete ECR image after deployment
+        env:
+          ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          aws ecr batch-delete-image \
+            --repository-name doclens \
+            --image-ids imageTag=$IMAGE_TAG imageTag=latest \
+            --region us-east-1
+
+      - name: Verify deployment
+        run: |
+          curl -f https://zmffo3m7oe.execute-api.us-east-1.amazonaws.com/prod/health
