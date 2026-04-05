@@ -17,14 +17,13 @@ router = APIRouter()
 @router.get("/documents", response_model=DocumentsResponse)
 def list_documents():
     start = time.time()
-
     documents = get_all_documents()
-
     total_chunks = sum(doc.chunk_count for doc in documents)
 
     return DocumentsResponse(
         documents=documents,
         total_documents=len(documents),
+        total_chunks=total_chunks,
         duration=format_duration(time.time() - start),
         message=(
             f"{len(documents)} document(s) ingested, "
@@ -60,6 +59,14 @@ async def ingest_document(file: UploadFile = File(...)):
         raise HTTPException(
             status_code=400,
             detail="Uploaded file is empty."
+        )
+    
+    MAX_FILE_SIZE = 6 * 1024 * 1024 # 6MB
+
+    if len(contents) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=413,
+            detail=f"File too large. Maximum size is 6MB. Your file is {len(contents) / 1024 / 1024:.1f}MB.",
         )
 
     try:

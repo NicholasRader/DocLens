@@ -14,20 +14,23 @@ with tab1:
     uploaded_file = st.file_uploader("Choose a PDF", type="pdf")
 
     if uploaded_file and st.button("Ingest", key="ingest_btn"):
-        with st.spinner("Ingesting..."):
-            response = requests.post(
-                f"{API_BASE}/ingest",
-                files={"file": (uploaded_file.name, uploaded_file.getvalue(), "application/pdf")},
-            )
-        if response.status_code == 200:
-            data = response.json()
-            st.success(f"Ingested in {data['duration']}")
-            st.metric("Chunks stored", data["chunk_count"])
-            st.metric("Pages", data["page_count"])
-        elif response.status_code == 409:
-            st.warning(response.json()["detail"])
+        if uploaded_file.size > 6 * 1024 * 1024:
+            st.error(f"File too large. Maximum size is 6MB. Your file is {uploaded_file.size / 1024 / 1024:.1f}MB.")
         else:
-            st.error(response.json().get("detail", "Something went wrong."))
+            with st.spinner("Ingesting..."):
+                response = requests.post(
+                    f"{API_BASE}/ingest",
+                    files={"file": (uploaded_file.name, uploaded_file.getvalue(), "application/pdf")},
+                )
+            if response.status_code == 200:
+                data = response.json()
+                st.success(f"Ingested in {data['duration']}")
+                st.metric("Chunks stored", data["chunk_count"])
+                st.metric("Pages", data["page_count"])
+            elif response.status_code == 409:
+                st.warning(response.json()["detail"])
+            else:
+                st.error(response.json().get("detail", "Something went wrong."))
 
 with tab2:
     st.header("Ask a question")

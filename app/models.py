@@ -53,5 +53,6 @@ class DocumentInfo(BaseModel):
 class DocumentsResponse(BaseModel):
     documents: List[DocumentInfo]
     total_documents: int
+    total_chunks: int
     duration: str
     message: str
