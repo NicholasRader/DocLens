@@ -8,7 +8,7 @@ from app.services.pdf import chunk_text
 from app.services.embeddings import embed_chunks
 from app.services.storage import store_in_chroma, get_all_chunks, get_all_documents
 from app.config import CHUNK_SIZE, CHUNK_OVERLAP, get_collection
-from app.utils import format_duration
+from app.utils import format_duration, normalize_filename
 
 
 router = APIRouter()
@@ -110,20 +110,21 @@ async def ingest_document(file: UploadFile = File(...)):
 @router.delete("/document/{filename}", response_model=DeleteResponse)
 async def delete_document(filename: str):
     start = time.time()
+    normalized_name = normalize_filename(filename)
 
-    existing = get_all_chunks(filename)
+    existing = get_all_chunks(normalized_name)
 
     if not existing:
         raise HTTPException(
             status_code=404,
-            detail=f"No content found for '{filename}'. Nothing to delete."
+            detail=f"No content found for '{normalized_name}'. Nothing to delete."
         )
     
-    get_collection().delete(where={"filename": filename})
+    get_collection().delete(where={"filename": normalized_name})
 
     return DeleteResponse(
-        filename=filename,
+        filename=normalized_name,
         chunks_deleted=len(existing),
         duration=format_duration(time.time() - start),
-        message=f"Deleted {len(existing)} chunks for '{filename}"
+        message=f"Deleted {len(existing)} chunks for '{normalized_name}"
     )

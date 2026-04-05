@@ -2,6 +2,11 @@
 
 A document intelligence API that lets you ingest PDFs, ask questions about them, and generate summaries. Built with a RAG (Retrieval-Augmented Generation) pipeline - documents are chunked, embedded, and stored as vectors so queries retrieve only relevant context rather than sending entire documents to the LLM on every call.
 
+## Demo
+
+Live: https://doclens-demo.streamlit.app  
+API docs: https://zmffo3m7oe.execute-api.us-east-1.amazonaws.com/prod/docs
+
 ## Stack
 
 - **FastAPI** - async REST API with Pydantic request/response validation
@@ -29,12 +34,6 @@ A document intelligence API that lets you ingest PDFs, ask questions about them,
 **Query:** The question is embedded with the same model, ChromaDB finds the 3 most similar chunks via cosine similarity, and the LLM answers using only that retrieved context.
 
 **Summarization:** Chunks are batched into groups of 10 and summarized concurrently via `asyncio.gather` with a semaphore capping concurrent LLM calls. Batch summaries are reduced into a single final summary.
-
-## Live API
-
-Base URL: `https://zmffo3m7oe.execute-api.us-east-1.amazonaws.com/prod`
-
-Interactive docs: https://zmffo3m7oe.execute-api.us-east-1.amazonaws.com/prod/docs
 
 ## Running locally
 ```bash

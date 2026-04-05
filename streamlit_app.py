@@ -4,7 +4,7 @@ import requests
 API_BASE = "https://zmffo3m7oe.execute-api.us-east-1.amazonaws.com/prod"
 
 st.set_page_config(page_title="DocLens", page_icon="🔍", layout="centered")
-st.title("🔍 DocLens")
+st.title("DocLens - Live Demo")
 st.caption("Upload a PDF to summarize it or ask questions about it.")
 
 tab1, tab2, tab3 = st.tabs(["Ingest", "Query", "Summarize"])
@@ -80,6 +80,11 @@ with st.sidebar:
             if data["documents"]:
                 for doc in data["documents"]:
                     st.write(f"📄 {doc['filename']} ({doc['chunk_count']} chunks)")
-                st.caption(f"{data['total_documents']} document(s), {data['total_chunks']} total chunks")
+                st.caption(
+                    f"{data['total_documents']} document(s), "
+                    f"{data['total_chunks']} total chunks"
+                )
             else:
                 st.write("No documents ingested yet.")
+        else:
+            st.error("Could not load documents.")

@@ -5,7 +5,7 @@ from app.services.embeddings import embed_chunks
 from app.services.storage import get_all_chunks
 from app.services.llm import generate_answer, summarize_chunks
 from app.config import get_collection
-from app.utils import format_duration
+from app.utils import format_duration, normalize_filename
 
 
 router = APIRouter()
@@ -28,6 +28,7 @@ async def retrieve_relevant_chunks(question: str, filename: str, n_results: int 
 @router.post("/query", response_model=QueryResponse)
 async def query_document(request: QueryRequest):
     start = time.time()
+    normalized_name = normalize_filename(request.filename)
 
     if not request.question.strip():
         raise HTTPException(
@@ -36,7 +37,7 @@ async def query_document(request: QueryRequest):
         )
 
     try:
-        chunks = await retrieve_relevant_chunks(request.question, request.filename)
+        chunks = await retrieve_relevant_chunks(request.question, normalized_name)
     except Exception as e:
         raise HTTPException(
             status_code=503,
@@ -46,7 +47,7 @@ async def query_document(request: QueryRequest):
     if not chunks:
         raise HTTPException(
             status_code=404,
-            detail=f"No content found for '{request.filename}'. Please ingest the document first."
+            detail=f"No content found for '{normalized_name}'. Please ingest the document first."
         )
     
     try:
@@ -69,13 +70,14 @@ async def query_document(request: QueryRequest):
 @router.post("/summarize", response_model=SummarizeResponse)
 async def summarize_document(request: SummarizeRequest):
     start = time.time()
+    normalized_name = normalize_filename(request.filename)
 
-    chunks = get_all_chunks(request.filename)
+    chunks = get_all_chunks(normalized_name)
 
     if not chunks:
         raise HTTPException(
             status_code=404,
-            detail=f"No content found for '{request.filename}'. Please ingest the document first."
+            detail=f"No content found for '{normalized_name}'. Please ingest the document first."
         )
     
     try:
@@ -87,9 +89,9 @@ async def summarize_document(request: SummarizeRequest):
         )
 
     return SummarizeResponse(
-        filename=request.filename,
+        filename=normalized_name,
         chunk_count=len(chunks),
         summary=summary,
         duration=format_duration(time.time() - start),
-        message=f"Summarized {len(chunks)} chunks from {request.filename}"
+        message=f"Summarized {len(chunks)} chunks from {normalized_name}"
     )
